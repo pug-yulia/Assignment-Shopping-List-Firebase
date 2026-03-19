@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, TextInput, Button, Text, StyleSheet, FlatList, Alert } from 'react-native';
 
 import { app } from './firebaseConfig';
-import { getDatabase, ref, push, onValue } from "firebase/database";
+import { getDatabase, ref, push, onValue, remove } from "firebase/database";
 
 export default function App() {
 
@@ -22,7 +22,11 @@ export default function App() {
       const data = snapshot.val();
 
       if (data) {
-        setItems(Object.values(data));
+        const itemsArray = Object.keys(data).map(key => ({
+          id: key,
+          ...data[key]
+        }));
+        setItems(itemsArray);
       } else {
         setItems([]);
       }
@@ -37,10 +41,14 @@ export default function App() {
     }
   };
 
+  const deleteItem = (id) => {
+    remove(ref(database, 'items/' + id));
+  };
+
   return (
     <View style={styles.container}>
 
-      <Text style={{ fontSize: 20, marginBottom: 20 }}>Shopping List</Text>
+      <Text style={{ fontSize: 20, marginBottom: 20 }}>Shopping List Firebase</Text>
 
       <TextInput
         placeholder='Product title'
@@ -65,6 +73,13 @@ export default function App() {
           <View style={styles.listcontainer}>
             <Text style={{ fontSize: 18 }}>
               {item.title}, {item.amount}
+            </Text>
+
+            <Text
+              style={{ color: 'red' }}
+              onPress={() => deleteItem(item.id)}
+            >
+              bought
             </Text>
           </View>
         }
